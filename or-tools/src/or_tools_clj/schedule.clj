@@ -121,6 +121,23 @@
     (-> solver .getParameters (.setLinearizationLevel 0))
     (-> solver .getParameters (.setEnumerateAllSolutions true)))
 
+  (def solution-count (atom 0))
+
+  (.solve
+   solver
+   model
+   (proxy [CpSolverSolutionCallback] []
+     (onSolutionCallback []
+       (println "Solution" @solution-count)
+       (doseq [d days]
+         (println "Day" d)
+         (doseq [n nurses]
+           (doseq [s shifts]
+             (when (proxy-super booleanValue (vars [n d s]))
+               (println "Nurse" n "works shift" s)))))
+       (swap! solution-count inc)
+       (when (>= 5 @solution-count)
+         (proxy-super stopSearch)))))
 
   (-> model .model str print)
   )
