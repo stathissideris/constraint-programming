@@ -76,32 +76,51 @@
 ;; working on example https://developers.google.com/optimization/scheduling/employee_scheduling
 
 (comment
-  (def model (CpModel.))
-
-  (def var-keys
-    (for [n (range 4)
-          d (range 3)
-          s (range 3)]
-      {:nurse n :d d :shift s}))
-
-  (def vars (zipmap var-keys (map #(.newBoolVar model (pr-str %)) var-keys)))
-
-  (.addExactlyOne model (for []))
-
-  (-> model .model str print) ;; seems to be the only way to inspect
-  )
-
-;; addded some stuff to the core namespace to help me out
-
-(comment
   (init!)
 
+  (def nurses [:a :b :c :d])
+  (def days (range 3))
+  (def shifts (range 3))
+
   (def model (CpModel.))
 
-  (def var-keys (ort/expand {:nurse (ENUM :a :b :c :d)
-                             :day   (RANGE 3)
-                             :shift (RANGE 3)}))
+  (def var-keys (for [n nurses
+                      d days
+                      s shifts]
+                  [n d s]))
 
   (def vars (zipmap var-keys (map #(.newBoolVar model (pr-str %)) var-keys)))
 
+  ;; Each shift is assigned to a single nurse per day
+  (doseq [d days
+          s shifts]
+    (.addExactlyOne model
+                    (map vars
+                         (for [n nurses] [n d s]))))
+
+  ;; Each nurse works at most one shift per day.
+  (doseq [n nurses
+          d days]
+    (.addAtMostOne model
+                   (map vars
+                        (for [s shifts] [n d s]))))
+
+  ;; there are nine shifts over the three-day period, we can assign two shifts
+  ;; to each of the four nurses. After that there will be one shift left over,
+  ;; which can be assigned to any nurse
+
+  (doseq [n nurses]
+    (let [shifts-worked (LinearExpr/newBuilder)]
+      (doseq [d days
+              s shifts]
+        (.add shifts-worked (vars [n d s])))
+      (.addLinearConstraint model shifts-worked 2 3)))
+
+  (do
+    (def solver (CpSolver.))
+    (-> solver .getParameters (.setLinearizationLevel 0))
+    (-> solver .getParameters (.setEnumerateAllSolutions true)))
+
+
+  (-> model .model str print)
   )
