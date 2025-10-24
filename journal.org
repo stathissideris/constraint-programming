@@ -1,0 +1,58 @@
+* Asked Tamas about Prolog fit to scheduling problem [2025-10-22 Wed]
+  - Chat
+    stathis.sideris
+      Today at 16:00
+    wanted to ask you something about Prolog, unrelated to work. Are you up for it? No pressure if you’d rather not!
+    8 replies
+
+
+    tamas.benko
+      Today at 16:00
+    sure!
+
+
+    stathis.sideris
+      Today at 16:03
+    I have this problem which is essentially scheduling, 5 crews that need to be allocated to 4 boats (one crew always has time off) over the duration of a year or two, and there are constraints like do max 15 handovers, if one crew was on leave for xmas last year, someone else should take that time off this year, when a boat is offshore handover is not possible etc. Do you think that prolog is a good candidate for solving this sort of thing?
+    Saved for later
+
+
+    tamas.benko
+      Today at 16:05
+    CLP is a good fit. plain Prolog (DFS) doesn’t scale well. modern Prolog systems (SICStus, for example) have very good CLP support and are optimal (or very close to that) choice for such tasks.
+
+
+    stathis.sideris
+      Today at 16:07
+    are there any free modern prologs? I’m not getting paid for this, it’s a favour for my brother
+    16:08
+    I’ve started looking at sat solvers (rolling stones in clojure) but I’m not optimistic about the fit
+
+
+    tamas.benko
+      Today at 16:09
+    https://www.swi-prolog.org/pldoc/man?section=clp might work.
+    16:09
+    your problem sounds like a CLP(FD) problem.
+
+
+    stathis.sideris
+      Today at 16:11
+    thanks a lot, I’ll look into it!
+  - https://www.swi-prolog.org/pldoc/man?section=clpfd
+  - https://www.metalevel.at/prolog
+  - Prolog looks scary, but Constraint Logic Programming over Finite Domains
+    looks like the right thing to look into, so I asked ChatGPT about it
+    - https://chatgpt.com/share/68f8ef6e-8164-8004-8e74-787c64b39217
+  - It confirmed about Prolog being a good choice, but also gave me a number of
+    other solutions
+    - SWI-Prolog’s clpfd — well-documented, open source, interoperable
+    - Best general-purpose integration: [[https://developers.google.com/optimization/cp/cp_solver][OR-Tools CP-SAT]] — extremely performant
+      for FD-like integer problems
+    - Best modeling language: MiniZinc + Gecode/Chuffed — great for expressing
+      combinatorial problems declaratively
+* OR-tools study [2025-10-24 Fri]
+  The example here is a confirmation that the CP part of OR-tools works for our
+  problem of employee scheduling:
+
+  https://developers.google.com/optimization/cp

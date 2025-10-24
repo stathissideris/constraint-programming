@@ -1,0 +1,2 @@
+{:deps {com.google.ortools/ortools-java {:mvn/version "9.12.4544"}
+        org.clojure/math.combinatorics {:mvn/version "0.3.0"}}}
